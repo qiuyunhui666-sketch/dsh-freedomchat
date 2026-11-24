@@ -51,6 +51,8 @@ Both can be open at the same time.
 
 Requires DSH `>= 0.2.2-rc.3` and Node `>= 22` (Desktop or Web).
 
+No companion plugin is needed. The panel lives in the host's own right sidebar (`@deepseek-ai/dsh-client-ui-sidebar-right`), so it appears with or without [`dsh-better-sidebar`](https://github.com/JohnXu22786/dsh-better-sidebar) — both can be installed and open side by side. If the right sidebar is collapsed, open it from the session header first.
+
 From a release:
 
 ```sh

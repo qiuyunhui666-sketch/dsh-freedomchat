@@ -63,6 +63,7 @@ Both can be open at the same time without interfering.
 - From a release: `dsh plugin --profile desktop add <url to the .tgz>`.
 - From a local checkout: `dsh plugin --profile desktop add link:<plugin dir>`.
 - Restart DSH after installing; client-only changes afterwards just need a page refresh.
+- **No companion plugin**: the right sidebar ships with DSH, so this works with or without `dsh-better-sidebar`, and both can coexist.
 
 ## Known limitations
 

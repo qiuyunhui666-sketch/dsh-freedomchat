@@ -51,6 +51,8 @@
 
 要求：DSH `>= 0.2.2-rc.3`、Node `>= 22`（桌面版 / 网页版均可）。
 
+不需要先装任何配套插件：面板用的是宿主自带的右侧栏（`@deepseek-ai/dsh-client-ui-sidebar-right`），装不装 `dsh-better-sidebar` 都能出现，两者也可以同时安装、同时打开。右侧栏处于收起状态时，先在标题栏把侧边栏展开。
+
 从 Release 安装：
 
 ```sh

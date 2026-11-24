@@ -63,6 +63,7 @@
 - 从 Release 安装：`dsh plugin --profile desktop add <release 里的 .tgz 地址>`。
 - 本地目录安装：`dsh plugin --profile desktop add link:<插件目录>`。
 - 安装后重启 DSH 生效；之后只改客户端代码刷新页面即可。
+- **不需要配套插件**：右栏是宿主自带的，装不装 `dsh-better-sidebar` 都能用，两者可以并存。
 
 ## 已知限制
 
