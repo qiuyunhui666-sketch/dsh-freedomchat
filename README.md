@@ -10,6 +10,16 @@ Your main session is busy running a task. You want a quick question answered, an
 
 This plugin adds an **isolated conversation panel**: empty context, zero local execution, its own model, two-way reading that always needs your explicit consent, and no effect on the main session the moment you close it.
 
+## Screenshots
+
+| Sidebar entry | Empty panel |
+| --- | --- |
+| ![Sidebar entry](assets/screenshot-entry.png) | ![Empty panel](assets/screenshot-panel.png) |
+
+| Model picker | In use |
+| --- | --- |
+| ![Model picker](assets/screenshot-models.png) | ![Conversation](assets/screenshot-chat.png) |
+
 ## Features
 
 - **A real right-sidebar tab**: one per session, opened like the built-in sidebar tabs. A session has at most one side thread, even across windows.
