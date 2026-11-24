@@ -1,0 +1,7 @@
+{
+  "meta": {
+    "title": "Side Freedom Chat",
+    "description": "A separate, chat-only panel in the right sidebar of every session: no inherited context, no local execution at all, its own model and reasoning effort, optional web tools, two-way reading only with your explicit approval, and it is deleted along with an archived session.",
+    "detail": "docs/DETAIL.md"
+  }
+}

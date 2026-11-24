@@ -1,0 +1,71 @@
+{
+  "name": "dsh-freedomchat",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Chat-only side panel for DeepSeek Harness: an isolated conversation in the right sidebar of every session — empty context, zero local execution, its own model, explicit-consent two-way reading, deleted with an archived session.",
+  "main": "./lib/index.js",
+  "exports": {
+    ".": {
+      "default": "./lib/index.js"
+    },
+    "./client": "./lib/client.js",
+    "./icon": "./icon.svg",
+    "./locale/*.json": "./locale/*.json",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib",
+    "docs",
+    "locale",
+    "scripts",
+    "cordis.patch.yml",
+    "icon.svg",
+    "README.md",
+    "README.zh-CN.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=22",
+    "dsh": ">=0.2.2-rc.3"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-slots",
+        "@deepseek-ai/dsh-client-ui-sidebar-right"
+      ]
+    },
+    "manifestVersion": 1,
+    "compatibility": {
+      "dshReleases": {
+        "0.2.2-rc.3+": "compatible",
+        "0.2.2-rc.4+": "compatible",
+        "0.2.2-rc.5+": "compatible"
+      }
+    }
+  },
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "sidebar",
+    "chat",
+    "side-chat",
+    "isolation",
+    "no-tools"
+  ],
+  "license": "MIT",
+  "author": "qiuyunhui666-sketch",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/qiuyunhui666-sketch/dsh-freedomchat.git"
+  },
+  "homepage": "https://github.com/qiuyunhui666-sketch/dsh-freedomchat#readme",
+  "bugs": {
+    "url": "https://github.com/qiuyunhui666-sketch/dsh-freedomchat/issues"
+  }
+}
