@@ -18,7 +18,7 @@
 import { readdirSync, readFileSync, rmSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 import { zstdDecompressSync } from 'node:zlib'
-import { entries } from '../lib/state.js'
+import { createdThreads, entries } from '../lib/state.js'
 
 const DRY = !process.argv.includes('--delete')
 const parentFlagIndex = process.argv.indexOf('--parent')
@@ -29,6 +29,10 @@ const MAGIC = Buffer.from([0x28, 0xb5, 0x2f, 0xfd])
 // Only this plugin's own system prompt proves authorship: a beta side chat or
 // any subagent seeded with the main history also quotes the words above.
 const MARKER = /你现在位于 DSH 的「侧边自由对话」面板中|与主对话隔离的独立线程/
+// Evidence that a model actually answered inside this transcript. A thread
+// without one never really started, so it cannot be a beta side chat or a
+// subagent worth keeping either.
+const ANSWERED = /"type":"assistant\/message"|"type":"message\/assistant"|"type":"reasoning"/
 
 function frames(buf) {
   const offsets = []
@@ -66,6 +70,8 @@ function decodeAll(buf) {
 // A thread the registry still points at is in use; anything only in `history`
 // is superseded. Both are ours by construction, so they count even when the
 // transcript no longer carries the system prompt (e.g. it was never answered).
+// `created` survives a 清空 that dropped the mapping, so a transcript whose
+// delete silently failed is still attributable.
 const live = new Set()
 const known = new Set()
 const parents = new Set()
@@ -76,6 +82,10 @@ for (const [parent, entry] of await entries()) {
     known.add(entry.threadId)
   }
   for (const id of entry?.history ?? []) known.add(id)
+}
+for (const [id, meta] of await createdThreads()) {
+  known.add(id)
+  if (typeof meta?.parentSessionId === 'string') parents.add(meta.parentSessionId)
 }
 
 const found = []
@@ -99,14 +109,17 @@ for (const segment of readdirSync(SESSIONS)) {
     }
     const header = readHeader(buf)
     if (header?.origin !== 'subagent' || !header?.parentSession) continue
-    // A thread that was created and never used is a bare header: it belongs to
-    // us when the parent is a session this plugin tracks, and deleting it loses
-    // nothing. Anything with content must prove authorship via the prompt.
+    // A thread that was created and never answered is ours by construction: it
+    // belongs to a parent this plugin tracks, and deleting it loses nothing.
+    // `empty` (a bare header) is the cheapest form, but a thread whose only
+    // turns died before any model ran (e.g. "has no provider/model") has no
+    // system prompt and no assistant row either — it is just as certainly ours.
     const empty = buf.length < 600
+    const text = decodeAll(buf)
     const mine =
       known.has(name) ||
-      MARKER.test(decodeAll(buf)) ||
-      (empty && parents.has(header.parentSession))
+      MARKER.test(text) ||
+      (parents.has(header.parentSession) && (empty || !ANSWERED.test(text)))
     if (!mine) continue
     found.push({
       segment,

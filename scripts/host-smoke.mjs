@@ -5,10 +5,10 @@
  *
  * Run: node scripts/host-smoke.mjs
  */
-import { mkdtemp, readFile, rm } from 'node:fs/promises'
+import { mkdtemp, readFile, rm, mkdir, writeFile } from 'node:fs/promises'
 import { existsSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
 
 const sandbox = await mkdtemp(join(tmpdir(), 'freedomchat-smoke-'))
 process.env.FREEDOMCHAT_STATE_DIR = join(sandbox, 'state')
@@ -17,7 +17,40 @@ process.env.FREEDOMCHAT_SWEEP_MS = '0'
 process.env.FREEDOMCHAT_BOOT_LOG = join(sandbox, 'boot.log')
 const registryFile = join(process.env.FREEDOMCHAT_STATE_DIR, 'threads.json')
 const { apply } = await import('../lib/index.js')
-const { sessionDirOf } = await import('../lib/state.js')
+const { sessionDirOf, encodeProjectSegment, deleteSessionArtifact } = await import('../lib/state.js')
+
+/*
+ * The project-folder encoding is load-bearing: every "delete this side thread"
+ * path derives the folder from the cwd, and `rm(path,{force:true})` reports
+ * success for a path that never existed. A wrong rule therefore deletes
+ * nothing and looks healthy. These pairs are copied from real folders this
+ * machine produced, so a regression fails here instead of on the user's disk.
+ */
+const SEGMENT_CASES = [
+  ['C:\\Users\\MIS\\.dsh\\bot\\workspace', '--C-Users-MIS-.dsh-bot-workspace--'],
+  ['D:\\DSH', '--D-DSH--'],
+  ['D:\\DSH\\work', '--D-DSH-work--'],
+  ['D:\\量化', '--D-~91CF~5316--'],
+  ['E:\\User\\Desktop\\多aitest\\demo', '--E-User-Desktop-~591Aaitest-demo--'],
+  [
+    'E:\\User\\Documents\\deepseek-harness\\default-workspace',
+    '--E-User-Documents-deepseek-harness-default-workspace--',
+  ],
+  ['E:\\Wegame', '--E-Wegame--'],
+  ['E:\\Work\\STG\\岩石力学\\DSHtest', '--E-Work-STG-~5CA9~77F3~529B~5B66-DSHtest--'],
+  [
+    'E:\\Work\\STG\\岩石力学\\Growth cycylic deep learning',
+    '--E-Work-STG-~5CA9~77F3~529B~5B66-Growth~0020cycylic~0020deep~0020learning--',
+  ],
+  [
+    'E:\\Work\\STG\\岩石力学\\等幅循环荷载论文',
+    '--E-Work-STG-~5CA9~77F3~529B~5B66-~7B49~5E45~5FAA~73AF~8377~8F7D~8BBA~6587--',
+  ],
+  [
+    'E:\\Work\\课题组任务\\大断面软岩施工安全关键技术研究\\结题\\缺少材料补充',
+    '--E-Work-~8BFE~9898~7EC4~4EFB~52A1-~5927~65AD~9762~8F6F~5CA9~65BD~5DE5~5B89~5168~5173~952E~6280~672F~7814~7A76-~7ED3~9898-~7F3A~5C11~6750~6599~8865~5145--',
+  ],
+]
 
 const archivedIds = []
 const persistedHeaders = new Map([
@@ -296,6 +329,18 @@ const value = (res) => {
 
 /* ───────────────────────── scenario ───────────────────────── */
 
+console.log('\n[0] project-folder encoding matches the host')
+for (const [cwd, expected] of SEGMENT_CASES) {
+  check(`segment ${cwd}`, encodeProjectSegment(cwd) === expected, {
+    got: encodeProjectSegment(cwd),
+    expected,
+  })
+}
+check(
+  'deleting a folder that does not exist reports false',
+  (await deleteSessionArtifact('session-00000000-0000-0000-0000-000000000000', 'D:/DSH/work')) === false,
+)
+
 await apply(ctx)
 check('route registered', typeof routeHandlers.at(-1) === 'function')
 
@@ -384,6 +429,15 @@ check('image block admitted', lastUser.data.content.some((block) => block.type =
 // 8. cancel stops the turn
 await post('cancel', { threadId })
 check('cancel returned', threadsCreated[0].status === 'idle')
+
+// 8b. put a real folder where the host would keep this thread's transcript, so
+// the clear assertion below proves a deletion instead of a missing path. The
+// previous version of this test never created the folder, so `!existsSync`
+// passed even while the encoder pointed at the wrong place.
+const threadDir = sessionDirOf(threadId, 'D:/DSH/work')
+await mkdir(threadDir, { recursive: true })
+await writeFile(join(threadDir, 'session.v4.jsonl.zstd'), 'x')
+check('the stubbed transcript exists before clear', existsSync(threadDir), threadDir)
 
 // 9. clear deletes this side conversation; nothing is minted until the next message
 const cleared = value(await post('clear', { threadId }))
