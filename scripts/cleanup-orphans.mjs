@@ -18,13 +18,13 @@
 import { readdirSync, readFileSync, rmSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 import { zstdDecompressSync } from 'node:zlib'
-import { createdThreads, entries } from '../lib/state.js'
+import { createdThreads, DSH_HOME, entries } from '../lib/state.js'
 
 const DRY = !process.argv.includes('--delete')
 const parentFlagIndex = process.argv.indexOf('--parent')
 const onlyParent = parentFlagIndex === -1 ? undefined : process.argv[parentFlagIndex + 1]
 
-const SESSIONS = process.env.FREEDOMCHAT_SESSIONS_ROOT ?? 'C:/Users/MIS/.dsh/sessions'
+const SESSIONS = process.env.FREEDOMCHAT_SESSIONS_ROOT ?? `${DSH_HOME}/sessions`
 const MAGIC = Buffer.from([0x28, 0xb5, 0x2f, 0xfd])
 // Only this plugin's own system prompt proves authorship: a beta side chat or
 // any subagent seeded with the main history also quotes the words above.

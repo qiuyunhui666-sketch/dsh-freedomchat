@@ -118,7 +118,7 @@ clear({ threadId }): { threadId, snapshot }
 
 ## 8. 持久化与冷恢复（P3）
 
-- 映射文件：`C:/Users/MIS/.dsh/freedomchat/threads.json`（`FREEDOMCHAT_STATE_DIR` 可覆盖），形如
+- 映射文件：`<DSH_HOME>/freedomchat/threads.json`（`FREEDOMCHAT_STATE_DIR` 可覆盖），形如
   `{version:1, threads:{ "<parentSessionId>": {threadId, state:'live'|'archived', cwd, settings, updatedAt} }}`；
   原子写（`tmp` → rename），进程内串行。
 - `ensure` 的顺序：内存里的活线程 → 注册表里的 `live` 条目（`agents.resume` 冷恢复）→ 新建。

@@ -21,6 +21,11 @@
   already gone and the old code still wrote its id into `threads.json`; it now
   answers 503 and lets the next `ensure` build a clean thread.
 
+- **The plugin no longer hard-codes one machine's `C:/Users/MIS/.dsh`.** State,
+  transcript cleanup and the boot log now resolve `DSH_HOME` (falling back to
+  `~/.dsh`), and the dev installer resolves the profile from the home
+  directory, so a release installed by anyone else can find its own files.
+
 ## 0.1.1
 
 ### Fixed

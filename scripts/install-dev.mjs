@@ -8,12 +8,14 @@
  * Restart DeepSeek Harness afterwards: the host reads the bundle list at start.
  */
 import { cpSync, existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { homedir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const here = dirname(fileURLToPath(import.meta.url))
 const source = resolve(here, '..')
-const profile = process.env.DSH_PROFILE_DIR || 'C:/Users/MIS/.dsh/profiles/desktop'
+const profile =
+  process.env.DSH_PROFILE_DIR || join(homedir(), '.dsh', 'profiles', 'desktop')
 const profilePackage = join(profile, 'package.json')
 const target = join(profile, 'node_modules', 'dsh-freedomchat')
 
