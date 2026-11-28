@@ -1,6 +1,6 @@
 {
   "name": "dsh-freedomchat",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "type": "module",
   "description": "Chat-only side panel for DeepSeek Harness: an isolated conversation in the right sidebar of every session — empty context, zero local execution, its own model, explicit-consent two-way reading, deleted with an archived session.",
   "main": "./lib/index.js",

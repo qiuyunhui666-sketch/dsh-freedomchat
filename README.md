@@ -56,7 +56,7 @@ No companion plugin is needed. The panel lives in the host's own right sidebar (
 From a release:
 
 ```sh
-dsh plugin --profile desktop add https://github.com/qiuyunhui666-sketch/dsh-freedomchat/releases/download/v0.1.0/dsh-freedomchat-0.1.0.tgz
+dsh plugin --profile desktop add https://github.com/qiuyunhui666-sketch/dsh-freedomchat/releases/download/v0.1.2/dsh-freedomchat-0.1.2.tgz
 ```
 
 From a local checkout:

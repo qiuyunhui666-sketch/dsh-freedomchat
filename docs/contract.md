@@ -47,7 +47,7 @@ clear({ threadId }): { threadId, snapshot }
 - 发送：本地先乐观插入一条 user 消息，再调 `send`；失败则回滚并提示；
 - 停止：`status === 'running'` 时发送按钮换成停止按钮，调 `cancel`；
 - 清空：二次确认（面板内确认条，不用原生弹窗）→ `clear` → 拿到新 `threadId` 继续轮询；
-- 附件：最多 8 张，png/jpeg/webp/gif；超过 8MB 拒绝并提示；文本粘贴走 text part；
+- 附件：最多 8 张，png/jpeg/webp/gif；单张超过 8MB 拒绝并提示，所选图片原始总大小超过 18MB 拒绝并提示；文本粘贴走 text part；
 - 渲染：assistant 的 text part 用 primitives 的 Markdown 组件，user 的 text 用等宽纯文本；
 - 错误：`status === 'error'` 时在消息流尾部显示一条错误条 + 重试按钮（重发上一条 user 消息）；
 - 面板整体包一层错误边界，组件崩溃时只坏面板，不坏整个会话界面。

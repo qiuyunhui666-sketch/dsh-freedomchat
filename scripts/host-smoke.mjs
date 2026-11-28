@@ -274,9 +274,9 @@ const sections = []
 
 /* ───────────────────────── fake req/res ───────────────────────── */
 
-function post(method, payload) {
+function post(method, payload, rawBody) {
   return new Promise((resolve, reject) => {
-    const body = Buffer.from(JSON.stringify(payload ?? {}))
+    const body = rawBody ?? Buffer.from(JSON.stringify(payload ?? {}))
     const req = {
       method: 'POST',
       url: `/freedomchat/api/${method}`,
@@ -343,6 +343,13 @@ check(
 
 await apply(ctx)
 check('route registered', typeof routeHandlers.at(-1) === 'function')
+
+// 0b. image payloads are base64 inline: a 2 MB body must not be rejected.
+const bigBody = Buffer.from(
+  JSON.stringify({ parentSessionId: 'session-body-limit', pad: 'x'.repeat(2 * 1024 * 1024) }),
+)
+const big = await post('peek', undefined, bigBody)
+check('a 2 MB request body is accepted', big.status === 200 && big.payload?.ok === true, big.status)
 
 // 1. ensure creates a blank child bound to the parent
 let res = await post('ensure', { parentSessionId: 'session-parent' })
@@ -752,6 +759,26 @@ check(
 const revivedEntry = JSON.parse(await readFile(registryFile, 'utf8')).threads?.['session-parent']
 check('revive clears the tombstone', revivedEntry?.threadId === revivedId && revivedEntry?.state === 'live', revivedEntry)
 
+// 19b. two windows pressing 新建对话 together must share one thread
+const beforeDoubleRevive = threadsCreated.length
+const clearedForRevive = await post('clear', { threadId: revivedId })
+check('clear before a double revive empties the panel', value(clearedForRevive).state === 'empty', value(clearedForRevive))
+const [firstRevive, secondRevive] = await Promise.all([
+  post('revive', { parentSessionId: 'session-parent' }),
+  post('revive', { parentSessionId: 'session-parent' }),
+])
+check(
+  'two concurrent revives share one thread',
+  value(firstRevive).threadId === value(secondRevive).threadId &&
+    threadsCreated.length === beforeDoubleRevive + 1,
+  {
+    first: value(firstRevive).threadId,
+    second: value(secondRevive).threadId,
+    created: threadsCreated.length - beforeDoubleRevive,
+  },
+)
+const revivedAgainId = value(firstRevive).threadId
+
 // 20. deleting the main session retires the thread through the sweep
 persistedHeaders.delete('session-parent')
 const { apply: applyAfterSecondRestart } = await import('../lib/index.js?restart=2')
@@ -762,7 +789,7 @@ check(
   value(afterDelete).state === 'archived' && value(afterDelete).threadId === null,
   value(afterDelete),
 )
-const revivedDir = sessionDirOf(revivedId, 'D:/DSH/work')
+const revivedDir = sessionDirOf(revivedAgainId, 'D:/DSH/work')
 check(
   'the retired thread artifact is gone',
   !existsSync(revivedDir),
